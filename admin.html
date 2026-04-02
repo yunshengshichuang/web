@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>云昇视创 - 后台管理</title>
+<style>
+*{box-sizing:border-box;font-family:"Microsoft YaHei",sans-serif}
+body{background:#f0f2f5;padding:40px 20px}
+.login-box,.admin-box{max-width:800px;margin:0 auto;background:#fff;padding:30px;border-radius:10px;box-shadow:0 2px 15px rgba(0,0,0,.1)}
+h1{text-align:center;color:#0F3460;margin-bottom:30px;font-size:26px}
+.item{margin-bottom:20px}
+label{display:block;margin-bottom:8px;font-weight:bold;color:#333}
+input,textarea{width:100%;padding:12px;border:1px solid #ddd;border-radius:6px;font-size:15px}
+button{width:100%;padding:14px;background:#0F3460;color:#fff;border:none;border-radius:6px;font-size:16px;font-weight:bold;cursor:pointer;margin-top:10px}
+button:hover{background:#1a4a88}
+.tip{color:#999;font-size:13px;margin-top:5px}
+.msg-item{border:1px solid #ddd;padding:15px;margin-bottom:10px;border-radius:6px}
+.msg-item p{margin-bottom:5px}
+.msg-item span{color:#666;font-size:14px}
+</style>
+</head>
+<body>
+<div id="loginBox" class="login-box">
+  <h1>后台登录</h1>
+  <div class="item">
+    <label>登录密码</label>
+    <input type="password" id="pwd" placeholder="请输入后台密码">
+    <div class="tip">初始密码：123456，可在后台修改</div>
+  </div>
+  <button onclick="login()">登录后台</button>
+</div>
+
+<div id="adminBox" class="admin-box" style="display:none">
+  <h1>云昇视创工作室 - 管理后台</h1>
+  
+  <div class="item">
+    <label>1. 修改登录密码</label>
+    <input type="password" id="newPwd" placeholder="设置新密码">
+    <button onclick="changePwd()">修改密码</button>
+  </div>
+
+  <div class="item">
+    <label>2. 替换公司展示图片（填图片网址）</label>
+    <input type="text" id="coverImg" placeholder="例如：https://xxx.com/xxx.jpg">
+  </div>
+
+  <div class="item">
+    <label>3. 修改前台联系信息</label>
+    <textarea id="contactText" rows="5" placeholder="编辑电话、微信、地址等"></textarea>
+  </div>
+
+  <div class="item">
+    <label>4. 案例图片链接（一行一个，可增删）</label>
+    <textarea id="caseImgs" rows="4" placeholder="每行填一张案例图片链接"></textarea>
+  </div>
+
+  <button onclick="saveAll()">保存所有设置</button>
+
+  <div class="item" style="margin-top:30px">
+    <label>5. 客户留言列表</label>
+    <div id="msgList"></div>
+  </div>
+</div>
+
+<script>
+let defaultPwd=localStorage.getItem("adminPwd")||"123456";
+
+function login(){
+  let pwd=document.getElementById("pwd").value;
+  if(pwd===defaultPwd){
+    document.getElementById("loginBox").style.display="none";
+    document.getElementById("adminBox").style.display="block";
+    loadData();
+    loadMsg();
+  }else{
+    alert("密码错误，请重新输入");
+  }
+}
+
+function changePwd(){
+  let newPwd=document.getElementById("newPwd").value;
+  if(!newPwd){alert("请输入新密码");return}
+  localStorage.setItem("adminPwd",newPwd);
+  defaultPwd=newPwd;
+  alert("密码修改成功！");
+}
+
+function loadData(){
+  let img=localStorage.getItem("coverImg");
+  let contact=localStorage.getItem("contactText");
+  let caseData=localStorage.getItem("caseImgs");
+  if(img)document.getElementById("coverImg").value=img;
+  if(contact)document.getElementById("contactText").value=contact;
+  if(caseData)document.getElementById("caseImgs").value=caseData;
+}
+
+function saveAll(){
+  let img=document.getElementById("coverImg").value;
+  let contact=document.getElementById("contactText").value;
+  let caseTxt=document.getElementById("caseImgs").value;
+  let caseHtml="";
+  caseTxt.split("\n").forEach(url=>{
+    if(url.trim())caseHtml+=`<div class="case-item"><img src="${url.trim()}" alt="案例"></div>`;
+  })
+  localStorage.setItem("coverImg",img);
+  localStorage.setItem("contactText",contact);
+  localStorage.setItem("caseImgs",caseHtml);
+  alert("保存成功，前台已同步更新！");
+}
+
+function loadMsg(){
+  let msgList=JSON.parse(localStorage.getItem("msgList")||"[]");
+  let html="";
+  msgList.forEach((item,index)=>{
+    html+=`<div class="msg-item">
+      <p><strong>姓名：</strong>${item.name} <strong>电话：</strong>${item.phone}</p>
+      <p><strong>内容：</strong>${item.content}</p>
+      <span>留言时间：${item.time}</span>
+    </div>`;
+  })
+  if(msgList.length===0)html="<p>暂无客户留言</p>";
+  document.getElementById("msgList").innerHTML=html;
+}
+</script>
+</body>
+</html>
